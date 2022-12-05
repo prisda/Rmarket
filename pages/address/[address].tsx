@@ -33,6 +33,10 @@ const RESERVOIR_API_BASE = process.env.NEXT_PUBLIC_RESERVOIR_API_BASE
 
 type Props = InferGetStaticPropsType<typeof getStaticProps>
 
+type UseEnsNameAddress = NonNullable<
+  Parameters<typeof useEnsName>['0']
+>['address']
+
 const metadata = {
   title: (title: string) => <title>{title}</title>,
 }
@@ -51,7 +55,7 @@ const Address: NextPage<Props> = ({ address, fallback }) => {
   })
 
   const { data: ensName } = useEnsName({
-    address,
+    address: address as UseEnsNameAddress,
     onSettled(data, error) {
       console.log('Settled', { data, error })
     },
@@ -91,14 +95,17 @@ const Address: NextPage<Props> = ({ address, fallback }) => {
   const isOwner = address?.toLowerCase() === accountData?.address?.toLowerCase()
   const formattedAddress = truncateAddress(address as string)
 
-  let tabs = [{ name: 'Tokens', id: 'portfolio' }]
+  let tabs = [
+    { name: 'Tokens', id: 'portfolio' },
+    { name: 'Listings', id: 'listings' },
+  ]
 
   if (isOwner) {
     tabs = [
       { name: 'Tokens', id: 'portfolio' },
-      { name: 'Offers Received', id: 'received' },
       { name: 'Offers Made', id: 'buying' },
-      { name: 'Listings', id: 'selling' },
+      { name: 'Active Listings', id: 'listings' },
+      { name: 'Inactive Listings', id: 'listings_inactive' },
     ]
   }
 
@@ -158,8 +165,8 @@ const Address: NextPage<Props> = ({ address, fallback }) => {
                     }}
                   />
                 </Tabs.Content>
-                <Tabs.Content value="received">
-                  <UserOffersReceivedTable
+                <Tabs.Content value="selling" className="col-span-full">
+                  <UserListingsTable
                     isOwner={isOwner}
                     collectionIds={collectionIds}
                     modal={{
@@ -168,16 +175,30 @@ const Address: NextPage<Props> = ({ address, fallback }) => {
                     }}
                   />
                 </Tabs.Content>
-                <Tabs.Content value="selling" className="col-span-full">
-                  <UserListingsTable
-                    collectionIds={collectionIds}
-                    modal={{
-                      isInTheWrongNetwork,
-                      setToast,
-                    }}
-                  />
-                </Tabs.Content>
               </>
+            )}
+            <Tabs.Content value="listings" className="col-span-full">
+              <UserListingsTable
+                isOwner={isOwner}
+                collectionIds={collectionIds}
+                modal={{
+                  isInTheWrongNetwork,
+                  setToast,
+                }}
+                showActive
+              />
+            </Tabs.Content>
+            {isOwner && (
+              <Tabs.Content value="listings_inactive" className="col-span-full">
+                <UserListingsTable
+                  isOwner={isOwner}
+                  collectionIds={collectionIds}
+                  modal={{
+                    isInTheWrongNetwork,
+                    setToast,
+                  }}
+                />
+              </Tabs.Content>
             )}
             <Tabs.Content value="activity" className="col-span-full">
               <UserActivityTab user={address} />

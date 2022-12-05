@@ -9,7 +9,6 @@ import Layout from 'components/Layout'
 import { useRef, useState } from 'react'
 import useCollectionStats from 'hooks/useCollectionStats'
 import useTokens from 'hooks/useTokens'
-import useCollectionAttributes from 'hooks/useCollectionAttributes'
 import { setToast } from 'components/token/setToast'
 import { paths, setParams } from '@reservoir0x/reservoir-kit-client'
 import Hero from 'components/Hero'
@@ -25,6 +24,7 @@ import Sweep from 'components/Sweep'
 import { useCollections, useAttributes } from '@reservoir0x/reservoir-kit-ui'
 import CollectionActivityTab from 'components/tables/CollectionActivityTab'
 import RefreshButton from 'components/RefreshButton'
+import SortTokens from 'components/SortTokens'
 import MobileTokensFilter from 'components/filter/MobileTokensFilter'
 
 // Environment variables
@@ -81,9 +81,6 @@ const Home: NextPage<Props> = ({ fallback, id }) => {
     router,
     false
   )
-
-  const { collectionAttributes, ref: refCollectionAttributes } =
-    useCollectionAttributes(router, id)
 
   const attributes = fallback?.attributes?.attributes
 
@@ -177,7 +174,7 @@ const Home: NextPage<Props> = ({ fallback, id }) => {
                           <FormatNativeCrypto
                             amount={
                               stats?.data?.stats?.market?.floorAsk?.price
-                                ?.netAmount?.decimal
+                                ?.amount?.decimal
                             }
                           />{' '}
                           floor price
@@ -186,6 +183,7 @@ const Home: NextPage<Props> = ({ fallback, id }) => {
                     )}
                   </div>
                   <div className="flex gap-4">
+                    <SortTokens />
                     <Sweep
                       collection={collection}
                       tokens={tokens.data}
@@ -194,7 +192,7 @@ const Home: NextPage<Props> = ({ fallback, id }) => {
                     />
                   </div>
                 </div>
-                <div className="mb-10 flex items-center justify-between">
+                <div className="z-20 mb-10 flex items-center justify-between">
                   <div>
                     <AttributesFlex className="flex flex-wrap gap-3" />
                   </div>
@@ -203,6 +201,8 @@ const Home: NextPage<Props> = ({ fallback, id }) => {
                   tokens={tokens}
                   viewRef={refTokens}
                   collectionImage={collection?.image as string}
+                  collectionSize={stats.data?.stats?.tokenCount}
+                  collectionAttributes={attributes}
                   isLoading={isLoading}
                 />
               </div>
